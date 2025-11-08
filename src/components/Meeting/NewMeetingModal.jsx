@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Search, SortAsc } from 'lucide-react';
 import { format } from 'date-fns';
 
-const API_BASE = 'http://10.36.81.141:5000';
+const API_BASE = 'http://192.168.0.106:5000';
 
 export default function NewMeetingModal({ close }) {
   const { id } = useParams(); // Get the meeting ID from URL params
@@ -78,13 +78,10 @@ export default function NewMeetingModal({ close }) {
     return out.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   }, [meetings, meetingNames]);
   
-  
-  
-
   useEffect(() => {
     const fetchMeetingData = async () => {
       try {
-        const res = await fetch('http://10.36.81.141:5000/api/meetings');
+        const res = await fetch('http://192.168.0.106:5000/api/meetings');
         const data = await res.json();
 
         const nameSet = new Set();
@@ -189,44 +186,56 @@ export default function NewMeetingModal({ close }) {
   };
 
   const onSubmit = async (data) => {
+  // ✅ Validation before creating meeting
+  if (!data.meetingName || data.meetingName.trim() === '') {
+    alert('⚠️ Please enter a meeting name before creating the meeting.');
+    return;
+  }
 
-    const formattedDate = format(new Date(), 'dd MMM yyyy, h:mm a');
+  if (!attendees || attendees.length === 0) {
+    alert('⚠️ Please add at least one participant before creating the meeting.');
+    return;
+  }
 
-    const meetingData = {
-      meetingName: data.meetingName,
-      organizerEmail: data.email,
-      dateOfMeeting: new Date().toISOString(),
-      attendees,
-      department: data.department,
-      company: data.company,
-      plant: data.plant,
-      presentByDate: {}  // optional
-    };
+  const formattedDate = format(new Date(), 'dd MMM yyyy, h:mm a');
 
-    // Log the data to be sent to the server
-    console.log("Sending meeting data:", meetingData); // This will show the data being sent
-
-    try {
-      const response = await fetch('http://10.36.81.141:5000/api/meetings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(meetingData), // Make sure 'department' is included here
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create meeting');
-      }
-
-      const createdMeeting = await response.json();
-      await fetchMeetings();
-      console.log('Created Meeting:', createdMeeting); // Log the created meeting response
-      console.log('Navigating to meeting ID:', createdMeeting.meeting_id);
-      navigate(`/meeting/${createdMeeting.meeting_id}`); // Redirect to the meeting page
-      close();  // Close the modal after successfully creating the meeting
-    } catch (error) {
-      console.error('Error creating meeting:', error);
-    }
+  const meetingData = {
+    meetingName: data.meetingName.trim(),
+    meetingType: data.meetingType,
+    organizerEmail: data.email,
+    dateOfMeeting: new Date().toISOString(),
+    attendees,
+    department: data.department,
+    company: data.company,
+    plant: data.plant,
+    presentByDate: {},
   };
+
+  console.log('Sending meeting data:', meetingData);
+
+  try {
+    const response = await fetch('http://192.168.0.106:5000/api/meetings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(meetingData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create meeting');
+    }
+
+    const createdMeeting = await response.json();
+    await fetchMeetings();
+
+    console.log('Created Meeting:', createdMeeting);
+    navigate(`/meeting/${createdMeeting.meeting_id}`);
+    close();
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+    alert('⚠️ Could not create meeting. Please try again.');
+  }
+};
+
 
   return (
     <motion.div
@@ -245,39 +254,38 @@ export default function NewMeetingModal({ close }) {
         <form onSubmit={handleSubmit(onSubmit)} className="flex gap-6 max-h-[70vh] text-sm overflow-y-auto">
           {/* Left Section */}
           <div className="flex-[1.4] p-4 space-y-5 bg-white/60 backdrop-blur-lg rounded-xl shadow-inner">
-            {/* Meeting Name */}
-            <div>
-              <label className="font-medium">Meeting Name</label>
-              <div className="flex gap-2 mt-1">
-                <select {...register('meetingName')} className="w-1/2 p-2 border rounded-lg">
-                  <option value="">Select</option>
-                  
+          
+          {/* Meeting Name */}
+<div>
+  <label className="font-medium">Meeting Name</label>
+  <input
+    {...register('meetingName', { required: true })}
+    className="w-full p-2 border rounded mt-1"
+    placeholder="Enter meeting name"
+  />
+</div>
 
-                  {uniqueMeetingNames.map((name) => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
-                <input
-                  value={newMeetingName}
-                  onChange={(e) => setNewMeetingName(e.target.value)}
-                  className="flex-grow p-2 border rounded"
-                  placeholder="Add new"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const val = newMeetingName.trim();
-                    if (!val) return;
-                    if (!uniqueMeetingNames.some(n => n.toLowerCase() === val.toLowerCase())) {
-                      addMeetingName(val);
-                    }
-                    setNewMeetingName('');
-                    
-                  }}
-                  className="px-3 bg-green-600 text-white rounded"
-                >Add</button>
-              </div>
-            </div>
+            {/* Meeting Type */}
+            <div>
+  <label className="font-medium">Meeting Type</label>
+  <select
+    {...register('meetingType', { required: true })}
+    className="w-full p-2 border rounded mt-1"
+    defaultValue=""
+  >
+    <option value="" disabled hidden>
+      Select Type
+    </option>
+    <option value="Daily Meeting">Daily Meeting</option>
+    <option value="Weekly Review">Weekly Review</option>
+    <option value="Monthly Review">Monthly Review</option>
+    <option value="Project Discussion">Project Discussion</option>
+    <option value="Client Meeting">Client Meeting</option>
+    <option value="Training / Workshop">Training / Workshop</option>
+    <option value="Emergency Meeting">Emergency Meeting</option>
+  </select>
+</div>
+
 
             {/* Company and Plant */}
             <div className="grid grid-cols-2 gap-3">
@@ -347,7 +355,7 @@ export default function NewMeetingModal({ close }) {
               </div>
             </div>
 
-            {/* Sort + Search + Select All */}
+     {/* Sort + Search + Select All */}
             <div className="flex items-center gap-2 mb-2">
               <button
                 type="button"
