@@ -310,7 +310,7 @@ export default function MainPage() {
       form.append('photo', selectedFile);
       form.append('email', user?.email || '');
 
-      const resp = await fetch('http://10.36.81.141:5000/api/users/me/photo', {
+      const resp = await fetch('http://192.168.0.106:5000/api/users/me/photo', {
         method: 'POST',
         body: form,
       });
@@ -413,7 +413,7 @@ export default function MainPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('http://10.36.81.141:5000/api/users');
+        const res = await fetch('http://192.168.0.106:5000/api/users');
         const data = await res.json();
         setDirectory(
           (Array.isArray(data) ? data : []).map((u) => ({ name: u.name || '', email: u.email || '' })),
@@ -655,7 +655,7 @@ From: ${job.name}`;
     );
 
     try {
-      const response = await fetch('http://10.36.81.141:5000/send-email', {
+      const response = await fetch('http://192.168.0.106:5000/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -718,7 +718,7 @@ From: ${job.name}`;
         }));
 
         try {
-          const resp = await fetch(`http://10.36.81.141:5000/api/meetings/${meetingId}/mom`, {
+          const resp = await fetch(`http://192.168.0.106:5000/api/meetings/${meetingId}/mom`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mom: momRows }),
@@ -767,7 +767,7 @@ From: ${job.name}`;
         }));
 
         try {
-          const resp = await fetch(`http://10.36.81.141:5000/api/meetings/${meetingId}/mom`, {
+          const resp = await fetch(`http://192.168.0.106:5000/api/meetings/${meetingId}/mom`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mom: momRows }),
