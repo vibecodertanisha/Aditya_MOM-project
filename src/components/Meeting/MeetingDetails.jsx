@@ -22,7 +22,7 @@ const noteColors = [
   '#67e8f9', // cyan-300
 ];
 
-const API_BASE = 'http://10.36.81.141:5000';
+const API_BASE = 'http://192.168.0.106:5000';
 
 // Prefer user's display name; if missing, fallback to email local-part
 const normalizeUserName = (u) => {
@@ -125,7 +125,7 @@ export default function MeetingDetails() {
   useEffect(() => {
     const fetchMeeting = async () => {
       try {
-        const res = await fetch(`http://10.36.81.141:5000/api/meetings/${id}`);
+        const res = await fetch(`http://192.168.0.106:5000/api/meetings/${id}`);
         const data = await res.json();
 
         if (res.ok) {
@@ -300,7 +300,7 @@ export default function MeetingDetails() {
 
     try {
       // Persist via the endpoint you already have
-      const resp = await fetch(`http://10.36.81.141:5000/api/meetings/${id}/attendees`, {
+      const resp = await fetch(`http://192.168.0.106:5000/api/meetings/${id}/attendees`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: trimmed }),
@@ -343,7 +343,7 @@ export default function MeetingDetails() {
       };
 
       try {
-        const response = await fetch(`http://10.36.81.141:5000/api/meetings/${id}/stickynotes`, {
+        const response = await fetch(`http://192.168.0.106:5000/api/meetings/${id}/stickynotes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newNote),
